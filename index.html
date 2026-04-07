@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Il Dilemma del Carrello - Interactive</title>
 
-  <!-- Tailwind config (prima del CDN) -->
   <script>
     tailwind = window.tailwind || {};
     tailwind.config = {
@@ -26,13 +25,8 @@
     }
   </script>
 
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-
-  <!-- html2canvas -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <style>
@@ -65,19 +59,16 @@
       user-select: none;
     }
 
-    /* Accessibilità: focus visibile */
     :focus-visible{
       outline: 2px solid rgba(239,68,68,.8);
       outline-offset: 3px;
       border-radius: 10px;
     }
 
-    /* Utility */
     .hidden { display: none !important; }
     .font-serif { font-family: 'Noto Serif', serif; }
     .font-cursive { font-family: 'Dancing Script', cursive; }
 
-    /* Panel glass */
     .glass{
       background: var(--panel);
       border: 1px solid var(--stroke);
@@ -94,7 +85,6 @@
       box-shadow: 0 30px 80px rgba(0,0,0,.65);
     }
 
-    /* Grain texture overlay */
     .grain::before{
       content:"";
       position: absolute;
@@ -106,7 +96,6 @@
       mix-blend-mode: overlay;
     }
 
-    /* Animations */
     @keyframes shake {
       0% { transform: translate(1px, 1px) rotate(0deg); }
       10% { transform: translate(-1px, -2px) rotate(-1deg); }
@@ -136,31 +125,151 @@
     }
     @keyframes scanline { 0% { bottom: 100%; } 100% { bottom: -120%; } }
 
-    /* Better tap highlight on mobile */
     button, a { -webkit-tap-highlight-color: transparent; }
 
-    /* Reduced motion */
     @media (prefers-reduced-motion: reduce){
       .animate-shake, .scanline, .animate-pulse, .animate-bounce, .animate-ping { animation: none !important; }
       * { scroll-behavior: auto !important; transition-duration: 0ms !important; }
     }
 
-    /* Soft scrollbar */
     ::-webkit-scrollbar { width: 10px; }
     ::-webkit-scrollbar-track { background: rgba(255,255,255,.04); }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 999px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.18); }
 
-    /* Small helper transitions */
     .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 180ms; }
     .duration-300 { transition-duration: 300ms; }
     .duration-500 { transition-duration: 500ms; }
     .duration-1000 { transition-duration: 1000ms; }
+
+    /* === ENHANCED EFFECTS === */
+
+    /* Vignette rossa durante simulazione */
+    #vignette-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(139,0,0,0.6) 100%);
+    }
+
+    /* Heartbeat pulse sul body */
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      14% { transform: scale(1.02); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.015); }
+    }
+    .heartbeat { animation: heartbeat 0.9s ease-in-out infinite; }
+
+    /* Screen shake violento per impatto */
+    @keyframes impactShake {
+      0%, 100% { transform: translate(0,0) rotate(0); }
+      10% { transform: translate(-8px, 6px) rotate(-1.5deg); }
+      20% { transform: translate(10px, -4px) rotate(2deg); }
+      30% { transform: translate(-6px, 8px) rotate(-1deg); }
+      40% { transform: translate(8px, -6px) rotate(1.5deg); }
+      50% { transform: translate(-4px, 4px) rotate(-0.5deg); }
+      60% { transform: translate(6px, -2px) rotate(1deg); }
+      70% { transform: translate(-2px, 6px) rotate(-0.5deg); }
+      80% { transform: translate(4px, -4px) rotate(0.5deg); }
+      90% { transform: translate(-2px, 2px) rotate(0); }
+    }
+    .impact-shake { animation: impactShake 0.6s ease-out; }
+
+    /* Flash bianco */
+    #flash-overlay {
+      position: fixed;
+      inset: 0;
+      background: white;
+      pointer-events: none;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
+
+    /* Fade nero cinematico */
+    #cinematic-fade {
+      position: fixed;
+      inset: 0;
+      background: black;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+    }
+    #cinematic-fade.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Typewriter effect */
+    @keyframes blink-caret {
+      from, to { border-color: transparent; }
+      50% { border-color: rgba(239,68,68,.8); }
+    }
+    .typewriter-cursor {
+      border-right: 3px solid rgba(239,68,68,.8);
+      animation: blink-caret 0.75s step-end infinite;
+      padding-right: 2px;
+    }
+
+    /* Pulsing timer when critical */
+    @keyframes criticalPulse {
+      0%, 100% { text-shadow: 0 0 10px rgba(239,68,68,0.5); }
+      50% { text-shadow: 0 0 30px rgba(239,68,68,1), 0 0 60px rgba(239,68,68,0.5); }
+    }
+    .timer-critical {
+      animation: criticalPulse 0.5s ease-in-out infinite;
+      color: #ff0000 !important;
+    }
+
+    /* Breathing glow for intro */
+    @keyframes breathe {
+      0%, 100% { box-shadow: 0 0 20px rgba(239,68,68,0.1), 0 20px 60px rgba(0,0,0,.55); }
+      50% { box-shadow: 0 0 40px rgba(239,68,68,0.3), 0 20px 60px rgba(0,0,0,.55); }
+    }
+    .breathe { animation: breathe 3s ease-in-out infinite; }
+
+    /* Fade-in animation for phases */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeSlideUp 0.8s ease-out forwards; }
+
+    /* Quiz option hover ripple */
+    .quiz-option {
+      position: relative;
+      overflow: hidden;
+    }
+    .quiz-option::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(239,68,68,0.15) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .quiz-option:hover::after { opacity: 1; }
   </style>
 </head>
 
 <body>
   <div class="scanline"></div>
+
+  <!-- Overlay layers -->
+  <div id="vignette-overlay"></div>
+  <div id="flash-overlay"></div>
+  <div id="cinematic-fade">
+    <div id="cinematic-text" class="text-center px-8"></div>
+  </div>
 
   <!-- === PHASE 1: INTRO === -->
   <div id="phase-intro" class="phase relative grain flex flex-col items-center justify-center min-h-screen w-full p-6 md:p-10 text-center">
@@ -169,7 +278,7 @@
       <div class="absolute -bottom-32 -right-32 w-[32rem] h-[32rem] rounded-full blur-3xl opacity-25" style="background: rgba(234,179,8,.25)"></div>
     </div>
 
-    <div class="relative glass-strong rounded-3xl border border-white/10 px-6 md:px-10 py-10 md:py-12 max-w-2xl w-full">
+    <div class="relative glass-strong rounded-3xl border border-white/10 px-6 md:px-10 py-10 md:py-12 max-w-2xl w-full breathe fade-in">
       <div class="mx-auto mb-7 w-fit p-4 rounded-2xl border border-white/10 bg-white/5 shadow-soft">
         <i data-lucide="git-commit" class="w-12 h-12 text-red-500"></i>
       </div>
@@ -189,14 +298,14 @@
       </button>
 
       <div class="mt-8 text-xs text-neutral-400/80 font-mono tracking-widest">
-        MODALITÀ: <span class="text-neutral-200">INTERATTIVA</span> · DURATA: <span class="text-neutral-200">~30s</span>
+        MODALIT&Agrave;: <span class="text-neutral-200">INTERATTIVA</span> &middot; DURATA: <span class="text-neutral-200">~60s</span>
       </div>
     </div>
   </div>
 
   <!-- === PHASE 2: QUIZ === -->
   <div id="phase-quiz" class="phase hidden relative grain flex-col items-center justify-center min-h-screen w-full p-5 md:p-8 max-w-3xl mx-auto">
-    <div class="w-full glass-strong rounded-3xl p-6 md:p-8">
+    <div class="w-full glass-strong rounded-3xl p-6 md:p-8 fade-in">
       <div class="w-full mb-8">
         <div class="h-2 w-full bg-neutral-800/70 rounded-full overflow-hidden border border-white/10">
           <div id="quiz-progress" class="h-full bg-red-500 transition-all duration-300" style="width: 0%"></div>
@@ -215,14 +324,14 @@
       </div>
 
       <div class="mt-8 text-center text-xs text-neutral-500 font-mono">
-        Suggerimento: scegli d’istinto. La lucidità arriva dopo.
+        Suggerimento: scegli d'istinto. La lucidit&agrave; arriva dopo.
       </div>
     </div>
   </div>
 
   <!-- === PHASE 3: BRIEFING === -->
   <div id="phase-briefing" class="phase hidden relative grain flex-col items-center justify-center min-h-screen w-full p-4 md:p-8 max-w-6xl mx-auto">
-    <div class="w-full glass-strong rounded-3xl p-6 md:p-10">
+    <div class="w-full glass-strong rounded-3xl p-6 md:p-10 fade-in">
       <div class="mb-6 flex items-center justify-center gap-3 text-yellow-500">
         <i data-lucide="alert-triangle" class="w-8 h-8"></i>
         <h2 class="text-xl md:text-2xl font-bold tracking-widest uppercase">Protocollo di Emergenza</h2>
@@ -232,7 +341,6 @@
         Analisi Strategica del Binario
       </h1>
 
-      <!-- DIAGRAMMA -->
       <div class="w-full max-w-4xl mx-auto glass rounded-2xl border border-white/10 p-4 md:p-8 mb-8 relative overflow-hidden flex justify-center items-center">
         <div class="absolute inset-0 opacity-30 pointer-events-none"
           style="background: radial-gradient(600px 240px at 40% 30%, rgba(239,68,68,.18), transparent 60%),
@@ -266,7 +374,7 @@
           AVVIA SIMULAZIONE
         </button>
         <div class="mt-4 text-xs text-neutral-400 font-mono">
-          La leva resterà attiva solo prima del punto di non ritorno.
+          La leva rester&agrave; attiva solo prima del punto di non ritorno.
         </div>
       </div>
     </div>
@@ -274,7 +382,6 @@
 
   <!-- === PHASE 4: SIMULATION === -->
   <div id="phase-simulation" class="phase hidden relative w-full min-h-screen overflow-hidden flex flex-col items-center justify-center">
-    <!-- Background Text -->
     <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
       <h1 id="sim-bg-text" class="text-[20vw] font-black text-neutral-900 select-none tracking-tight">DECIDI</h1>
     </div>
@@ -283,21 +390,19 @@
     <div id="sim-timer-container" class="absolute top-6 md:top-10 w-72 h-20 flex flex-col items-center z-20 glass-strong rounded-2xl px-6 py-4">
       <div id="sim-timer-text" class="text-5xl font-mono font-black text-red-500 mb-1 drop-shadow-lg">12.0s</div>
       <div class="w-full h-2 bg-neutral-700/70 rounded-full overflow-hidden border border-white/10">
-        <div id="sim-timer-bar" class="h-full bg-red-500" style="width: 100%"></div>
+        <div id="sim-timer-bar" class="h-full bg-red-500 transition-all" style="width: 100%"></div>
       </div>
       <div class="text-[10px] font-bold text-neutral-400 tracking-widest mt-2 uppercase">Tempo al punto di non ritorno</div>
     </div>
 
     <!-- Scene -->
-    <div class="relative w-[92%] max-w-5xl h-[28rem] md:h-96 border border-white/10 rounded-3xl bg-neutral-900/40 backdrop-blur-md flex items-center overflow-hidden shadow-soft">
-      <!-- Linea Punto di Non Ritorno -->
+    <div id="sim-scene" class="relative w-[92%] max-w-5xl h-[28rem] md:h-96 border border-white/10 rounded-3xl bg-neutral-900/40 backdrop-blur-md flex items-center overflow-hidden shadow-soft">
       <div class="absolute top-0 bottom-0 border-r-2 border-dashed border-yellow-500/50 z-0" style="left: 45%">
         <div class="absolute bottom-4 -right-[4.5rem] text-[10px] text-yellow-500 font-mono bg-neutral-900/90 px-2 py-1 rounded border border-yellow-900">
           PUNTO DI NON RITORNO
         </div>
       </div>
 
-      <!-- Binari -->
       <div class="absolute w-full h-2 bg-neutral-600 top-1/2 -translate-y-1/2"></div>
       <svg class="absolute w-full h-full pointer-events-none" viewBox="0 0 1000 400" preserveAspectRatio="none" style="top: 0; left: 0;">
         <path d="M 450,200 C 550,200 650,300 1000,300" fill="none" stroke="#525252" stroke-width="8" stroke-dasharray="20,20" />
@@ -341,12 +446,11 @@
     <div id="sim-controls" class="mt-10 md:mt-12 text-center z-20">
       <div id="controls-active" class="glass-strong rounded-3xl px-8 py-7 border border-white/10">
         <p class="text-neutral-300 mb-4 font-mono text-sm uppercase tracking-widest animate-pulse">SCELTA IN CORSO...</p>
-        <!-- NOTA: il bottone viene ristilizzato via JS (updateLeverButton). -->
         <button id="btn-lever" onclick="toggleLever()"
           class="relative w-72 h-28 bg-neutral-300 text-neutral-900 border-b-[10px] border-neutral-500 hover:bg-white rounded-xl font-bold text-2xl uppercase tracking-wider transition-all transform active:scale-95 shadow-2xl cursor-pointer">
           AZIONA SCAMBIO
         </button>
-        <p class="mt-4 text-xs text-neutral-400">Puoi cambiare idea finché il treno non raggiunge la linea gialla.</p>
+        <p class="mt-4 text-xs text-neutral-400">Puoi cambiare idea finch&eacute; il treno non raggiunge la linea gialla.</p>
       </div>
 
       <div id="controls-locked" class="hidden flex flex-col items-center mt-6">
@@ -365,9 +469,22 @@
     </div>
   </div>
 
-  <!-- === PHASE 5: INPUT NAME === -->
+  <!-- === PHASE 5A: REFLECTION (NEW) === -->
+  <div id="phase-reflection" class="phase hidden relative grain flex-col items-center justify-center min-h-screen w-full p-6 md:p-10 text-center">
+    <div class="max-w-2xl w-full">
+      <div id="reflection-content" class="space-y-8">
+        <!-- Populated by JS -->
+      </div>
+      <button id="btn-continue-reflection" onclick="showNameInput()" class="hidden mt-12 mx-auto px-10 py-4 bg-white/10 border border-white/20 text-white font-bold text-lg rounded-2xl hover:bg-white/20 transition-all cursor-pointer flex items-center gap-3">
+        <span>Continua</span>
+        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- === PHASE 5B: INPUT NAME === -->
   <div id="phase-input" class="phase hidden relative grain flex-col items-center justify-center min-h-screen w-full p-6 md:p-10">
-    <div class="max-w-md w-full text-center glass-strong rounded-3xl p-8 md:p-10 border border-white/10">
+    <div class="max-w-md w-full text-center glass-strong rounded-3xl p-8 md:p-10 border border-white/10 fade-in">
       <i data-lucide="pen-tool" class="w-12 h-12 text-white mx-auto mb-6 block"></i>
       <h2 class="text-2xl font-black text-white mb-2">Identificazione Richiesta</h2>
       <p class="text-neutral-300 mb-8">Per finalizzare il rapporto etico, inserisci il tuo nome.</p>
@@ -383,7 +500,7 @@
       </form>
 
       <div class="mt-6 text-[11px] text-neutral-400 font-mono">
-        Il nome verrà usato solo per il file esportato.
+        Il nome verr&agrave; usato solo per il file esportato.
       </div>
     </div>
   </div>
@@ -392,7 +509,6 @@
   <div id="phase-result" class="phase hidden relative grain flex flex-col items-center justify-center min-h-screen w-full p-4 md:p-8">
     <div id="certificate-area"
       class="bg-[#fdfbf7] text-neutral-900 p-10 md:p-16 max-w-3xl w-full shadow-2xl relative overflow-hidden border-[12px] border-double border-neutral-800 rounded-[28px]">
-      <!-- Texture -->
       <div class="absolute inset-0 opacity-[0.06] pointer-events-none"
         style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 18px 18px;"></div>
 
@@ -415,7 +531,7 @@
       <div class="text-center">
         <h3 class="text-sm font-black tracking-[0.3em] uppercase text-neutral-500 mb-4">Si certifica che</h3>
         <h1 id="cert-name" class="text-3xl font-serif font-black mb-2 text-neutral-900">Soggetto</h1>
-        <h3 class="text-sm font-black tracking-[0.3em] uppercase text-neutral-500 mb-4">è classificato come</h3>
+        <h3 class="text-sm font-black tracking-[0.3em] uppercase text-neutral-500 mb-4">&egrave; classificato come</h3>
 
         <div class="bg-neutral-900 text-[#fdfbf7] inline-block px-6 py-2 mb-4 transform -rotate-1 shadow-lg rounded-xl">
           <h1 id="cert-title" class="text-2xl md:text-4xl font-serif font-black">Titolo</h1>
@@ -472,23 +588,35 @@
         </button>
       </div>
 
-      <div class="w-full glass rounded-2xl p-4 border border-white/10 text-center">
-        <p class="text-sm text-neutral-300 mb-2">Hai scaricato il certificato? Caricalo qui:</p>
-        <a href="https://drive.google.com/drive/folders/1V2ACbc6aqQpjT21FlOo0wxYSvVe0FU-0?usp=sharing" target="_blank" rel="noopener noreferrer"
-          class="flex items-center justify-center gap-2 text-blue-300 hover:text-blue-200 hover:underline transition-colors font-mono text-sm break-all">
-          <i data-lucide="upload-cloud" class="w-4 h-4"></i> Cartella Drive Condivisa
-        </a>
+      <!-- Stato invio dati (sostituisce il link Drive) -->
+      <div id="data-status" class="w-full glass rounded-2xl p-4 border border-white/10 text-center">
+        <div id="data-sending" class="flex items-center justify-center gap-2 text-neutral-400 text-sm">
+          <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>
+          <span>Registrazione in corso...</span>
+        </div>
+        <div id="data-sent" class="hidden flex items-center justify-center gap-2 text-emerald-400 text-sm">
+          <i data-lucide="check-circle" class="w-4 h-4"></i>
+          <span>Dati registrati con successo</span>
+        </div>
+        <div id="data-error" class="hidden flex items-center justify-center gap-2 text-red-400 text-sm">
+          <i data-lucide="alert-circle" class="w-4 h-4"></i>
+          <span>Errore nella registrazione</span>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- === LOGIC (INVARIATA) === -->
+  <!-- === LOGIC === -->
   <script>
+    // --- CONFIG ---
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzgfrSjNSRtKotDFqAjhHcyRRQ7cFPEYw02R4gd3ryziJZC_XPyEO8fmrI6H2kOMq0/exec"; // URL del deploy Apps Script
+
     // --- STATE ---
     let quizAnswers = [];
     let currentQuestionIdx = 0;
     let userName = '';
-    
+    let resultData = {};
+
     const TOTAL_DECISION_TIME = 12;
     const SWITCH_POINT = 45;
     let timeLeft = TOTAL_DECISION_TIME;
@@ -496,349 +624,674 @@
     let leverPulled = false;
     let simInterval = null;
 
-    // Quiz Data
+    // --- AUDIO ENGINE (Web Audio API) ---
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function ensureAudio() {
+      if (!audioCtx) audioCtx = new AudioCtx();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playHeartbeat(bpm = 72) {
+      ensureAudio();
+      const interval = 60 / bpm;
+      const now = audioCtx.currentTime;
+
+      // Double thump: lub-dub
+      [0, 0.12].forEach((offset, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = i === 0 ? 55 : 45;
+        gain.gain.setValueAtTime(0, now + offset);
+        gain.gain.linearRampToValueAtTime(0.35, now + offset + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.15);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now + offset);
+        osc.stop(now + offset + 0.2);
+      });
+    }
+
+    let heartbeatInterval = null;
+    function startHeartbeat(bpm = 72) {
+      stopHeartbeat();
+      playHeartbeat(bpm);
+      heartbeatInterval = setInterval(() => playHeartbeat(bpm), (60 / bpm) * 1000);
+    }
+    function stopHeartbeat() {
+      if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+    }
+
+    function playTick() {
+      ensureAudio();
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.value = 800;
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.06);
+    }
+
+    function playImpact() {
+      ensureAudio();
+      const now = audioCtx.currentTime;
+
+      // Low boom
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(80, now);
+      osc.frequency.exponentialRampToValueAtTime(20, now + 0.8);
+      gain.gain.setValueAtTime(0.5, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 1.5);
+
+      // Noise burst
+      const bufferSize = audioCtx.sampleRate * 0.3;
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+      const noise = audioCtx.createBufferSource();
+      const noiseGain = audioCtx.createGain();
+      noise.buffer = buffer;
+      noiseGain.gain.setValueAtTime(0.3, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      noise.connect(noiseGain).connect(audioCtx.destination);
+      noise.start(now);
+    }
+
+    function playLeverClick() {
+      ensureAudio();
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.value = 1200;
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.1);
+    }
+
+    function playReveal() {
+      ensureAudio();
+      const now = audioCtx.currentTime;
+      [261.6, 329.6, 392.0].forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        const t = now + i * 0.15;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.12, t + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.7);
+      });
+    }
+
+    // --- QUIZ DATA ---
     const questions = [
-        {
-            text: "Cammini in un bosco e trovi un oggetto prezioso. Nessuno ti vede.",
-            options: [
-                { label: "Lo prendo. Il destino ha voluto così.", type: "fatalist" },
-                { label: "Lo lascio. L'ordine cosmico va rispettato.", type: "deontologist" }
-            ]
-        },
-        {
-            text: "Un computer può prendere decisioni migliori di un essere umano?",
-            options: [
-                { label: "Sì, i numeri non mentono.", type: "utilitarian" },
-                { label: "No, serve il cuore.", type: "sentimental" }
-            ]
-        },
-        {
-            text: "Preferiresti essere ricordato come...",
-            options: [
-                { label: "...colui che ha agito.", type: "active" },
-                { label: "...colui che ha osservato.", type: "passive" }
-            ]
-        }
+      {
+        text: "Cammini in un bosco e trovi un oggetto prezioso. Nessuno ti vede.",
+        options: [
+          { label: "Lo prendo. Il destino ha voluto cos\u00ec.", type: "fatalist" },
+          { label: "Lo lascio. L'ordine cosmico va rispettato.", type: "deontologist" }
+        ]
+      },
+      {
+        text: "Un computer pu\u00f2 prendere decisioni migliori di un essere umano?",
+        options: [
+          { label: "S\u00ec, i numeri non mentono.", type: "utilitarian" },
+          { label: "No, serve il cuore.", type: "sentimental" }
+        ]
+      },
+      {
+        text: "Preferiresti essere ricordato come...",
+        options: [
+          { label: "...colui che ha agito.", type: "active" },
+          { label: "...colui che ha osservato.", type: "passive" }
+        ]
+      }
     ];
 
     // --- INIT ---
     window.onload = () => {
-        lucide.createIcons();
+      lucide.createIcons();
     };
 
     function showPhase(phaseId) {
-        document.querySelectorAll('.phase').forEach(el => el.classList.add('hidden'));
-        document.getElementById(phaseId).classList.remove('hidden');
-        lucide.createIcons(); // Refresh icons for new visible area
+      document.querySelectorAll('.phase').forEach(el => el.classList.add('hidden'));
+      const phase = document.getElementById(phaseId);
+      phase.classList.remove('hidden');
+      phase.style.opacity = '0';
+      requestAnimationFrame(() => {
+        phase.style.transition = 'opacity 0.6s ease';
+        phase.style.opacity = '1';
+      });
+      lucide.createIcons();
     }
 
     // --- QUIZ LOGIC ---
     function startQuiz() {
-        currentQuestionIdx = 0;
-        quizAnswers = [];
-        renderQuestion();
-        showPhase('phase-quiz');
+      ensureAudio();
+      currentQuestionIdx = 0;
+      quizAnswers = [];
+      renderQuestion();
+      showPhase('phase-quiz');
     }
 
     function renderQuestion() {
-        const q = questions[currentQuestionIdx];
-        document.getElementById('quiz-question').innerText = q.text;
-        document.getElementById('quiz-counter').innerText = `DOMANDA ${currentQuestionIdx + 1} / ${questions.length}`;
-        
-        // Update progress bar
-        const pct = ((currentQuestionIdx + 1) / questions.length) * 100;
-        document.getElementById('quiz-progress').style.width = `${pct}%`;
+      const q = questions[currentQuestionIdx];
+      const questionEl = document.getElementById('quiz-question');
+      questionEl.innerText = '';
+      document.getElementById('quiz-counter').innerText = `DOMANDA ${currentQuestionIdx + 1} / ${questions.length}`;
 
-        // Render options
+      const pct = ((currentQuestionIdx + 1) / questions.length) * 100;
+      document.getElementById('quiz-progress').style.width = `${pct}%`;
+
+      // Typewriter effect for question
+      typeWriter(questionEl, q.text, 30, () => {
+        // Render options after typewriter
         const optsContainer = document.getElementById('quiz-options');
         optsContainer.innerHTML = '';
-        q.options.forEach(opt => {
-            const btn = document.createElement('button');
-            btn.className = "p-6 border border-neutral-700 rounded hover:border-red-500 hover:bg-neutral-800 transition-all text-left group cursor-pointer";
-            btn.innerHTML = `<span class="block text-lg font-medium group-hover:text-red-400 transition-colors">${opt.label}</span>`;
-            btn.onclick = () => handleAnswer(opt.type);
-            optsContainer.appendChild(btn);
+        q.options.forEach((opt, i) => {
+          const btn = document.createElement('button');
+          btn.className = "quiz-option p-6 border border-neutral-700 rounded-2xl hover:border-red-500 hover:bg-neutral-800/50 transition-all text-left group cursor-pointer opacity-0";
+          btn.style.animation = `fadeSlideUp 0.4s ease-out ${i * 0.15}s forwards`;
+          btn.innerHTML = `<span class="block text-lg font-medium group-hover:text-red-400 transition-colors">${opt.label}</span>`;
+          btn.addEventListener('mousemove', (e) => {
+            const r = btn.getBoundingClientRect();
+            btn.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+            btn.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+          });
+          btn.onclick = () => handleAnswer(opt.type);
+          optsContainer.appendChild(btn);
         });
+      });
+    }
+
+    function typeWriter(el, text, speed, callback) {
+      let i = 0;
+      el.classList.add('typewriter-cursor');
+      function type() {
+        if (i < text.length) {
+          el.textContent += text.charAt(i);
+          i++;
+          setTimeout(type, speed);
+        } else {
+          el.classList.remove('typewriter-cursor');
+          if (callback) callback();
+        }
+      }
+      type();
     }
 
     function handleAnswer(type) {
-        quizAnswers.push(type);
-        if (currentQuestionIdx < questions.length - 1) {
-            currentQuestionIdx++;
-            renderQuestion();
-        } else {
-            showPhase('phase-briefing');
-        }
+      quizAnswers.push(type);
+      playTick();
+      if (currentQuestionIdx < questions.length - 1) {
+        currentQuestionIdx++;
+        renderQuestion();
+      } else {
+        showPhase('phase-briefing');
+      }
     }
 
     // --- SIMULATION LOGIC ---
-    function startSimulation() {
-        // Reset Simulation State
-        timeLeft = TOTAL_DECISION_TIME;
-        trainPosition = 0;
-        leverPulled = false;
-        
-        // UI Reset
-        document.getElementById('train').style.left = '0%';
-        document.getElementById('train').style.top = '50%';
-        document.getElementById('sim-bg-text').innerText = "DECIDI";
-        document.getElementById('controls-active').classList.remove('hidden');
-        document.getElementById('controls-locked').classList.add('hidden');
-        document.getElementById('controls-impact').classList.add('hidden');
-        document.getElementById('sim-timer-container').classList.remove('hidden');
-        
-        // Victims Reset
-        const group = document.getElementById('victims-group');
-        const single = document.getElementById('victim-single');
-        group.classList.remove('scale-y-0', 'rotate-90', 'text-red-900', 'opacity-50');
-        group.classList.add('animate-bounce');
-        single.classList.remove('scale-y-0', 'rotate-90', 'text-red-900', 'opacity-50');
-        single.classList.add('animate-pulse');
-        
-        // Lever Button Reset
-        updateLeverButton();
+    let lastTickSecond = -1;
 
-        showPhase('phase-simulation');
-        
-        // Start Loop
-        simInterval = setInterval(updateSimulation, 50);
+    function startSimulation() {
+      timeLeft = TOTAL_DECISION_TIME;
+      trainPosition = 0;
+      leverPulled = false;
+      lastTickSecond = -1;
+
+      document.getElementById('train').style.left = '0%';
+      document.getElementById('train').style.top = '50%';
+      document.getElementById('sim-bg-text').innerText = "DECIDI";
+      document.getElementById('controls-active').classList.remove('hidden');
+      document.getElementById('controls-locked').classList.add('hidden');
+      document.getElementById('controls-impact').classList.add('hidden');
+      document.getElementById('sim-timer-container').classList.remove('hidden');
+      document.getElementById('vignette-overlay').style.opacity = '0';
+
+      const group = document.getElementById('victims-group');
+      const single = document.getElementById('victim-single');
+      group.classList.remove('scale-y-0', 'rotate-90', 'text-red-900', 'opacity-50');
+      group.classList.add('animate-bounce');
+      single.classList.remove('scale-y-0', 'rotate-90', 'text-red-900', 'opacity-50');
+      single.classList.add('animate-pulse');
+
+      updateLeverButton();
+      showPhase('phase-simulation');
+
+      // Start heartbeat - slow at first
+      startHeartbeat(60);
+
+      simInterval = setInterval(updateSimulation, 50);
     }
 
     function toggleLever() {
-        if (trainPosition < SWITCH_POINT) {
-            leverPulled = !leverPulled;
-            updateLeverButton();
-        }
+      if (trainPosition < SWITCH_POINT) {
+        leverPulled = !leverPulled;
+        playLeverClick();
+        updateLeverButton();
+
+        // Haptic feedback on mobile
+        if (navigator.vibrate) navigator.vibrate(50);
+      }
     }
 
     function updateLeverButton() {
-        const btn = document.getElementById('btn-lever');
-        if (leverPulled) {
-            btn.innerText = "SCAMBIO ATTIVATO";
-            btn.className = "relative w-72 h-28 bg-yellow-500 text-black border-b-[10px] border-yellow-700 translate-y-2 rounded-xl font-bold text-2xl uppercase tracking-wider transition-all transform shadow-2xl cursor-pointer";
-        } else {
-            btn.innerText = "AZIONA SCAMBIO";
-            btn.className = "relative w-72 h-28 bg-neutral-300 text-neutral-900 border-b-[10px] border-neutral-500 hover:bg-white rounded-xl font-bold text-2xl uppercase tracking-wider transition-all transform active:scale-95 shadow-2xl cursor-pointer";
-        }
+      const btn = document.getElementById('btn-lever');
+      if (leverPulled) {
+        btn.innerText = "SCAMBIO ATTIVATO";
+        btn.className = "relative w-72 h-28 bg-yellow-500 text-black border-b-[10px] border-yellow-700 translate-y-2 rounded-xl font-bold text-2xl uppercase tracking-wider transition-all transform shadow-2xl cursor-pointer";
+      } else {
+        btn.innerText = "AZIONA SCAMBIO";
+        btn.className = "relative w-72 h-28 bg-neutral-300 text-neutral-900 border-b-[10px] border-neutral-500 hover:bg-white rounded-xl font-bold text-2xl uppercase tracking-wider transition-all transform active:scale-95 shadow-2xl cursor-pointer";
+      }
     }
 
     function updateSimulation() {
-        // 1. Logic for Position
-        if (trainPosition < SWITCH_POINT) {
-            // Phase 1: Approach (Time based)
-            timeLeft -= 0.05;
-            if (timeLeft <= 0) {
-                timeLeft = 0;
-                trainPosition = SWITCH_POINT + 0.1; // Force crossover
-            } else {
-                const elapsedPct = (TOTAL_DECISION_TIME - timeLeft) / TOTAL_DECISION_TIME;
-                trainPosition = elapsedPct * SWITCH_POINT;
-            }
-
-            // Update Timer UI
-            document.getElementById('sim-timer-text').innerText = timeLeft.toFixed(1) + 's';
-            document.getElementById('sim-timer-bar').style.width = `${(timeLeft / TOTAL_DECISION_TIME) * 100}%`;
-
+      if (trainPosition < SWITCH_POINT) {
+        timeLeft -= 0.05;
+        if (timeLeft <= 0) {
+          timeLeft = 0;
+          trainPosition = SWITCH_POINT + 0.1;
         } else {
-            // Phase 2: After Switch (Acceleration)
-            trainPosition += 0.8;
-            
-            // Hide Timer & Active Controls if just crossed
-            document.getElementById('sim-timer-container').classList.add('hidden');
-            document.getElementById('controls-active').classList.add('hidden');
-            document.getElementById('controls-locked').classList.remove('hidden');
-            document.getElementById('sim-bg-text').innerText = "OSSERVA";
-
-            // Update Train Visual Position
-            const trainElement = document.getElementById('train');
-            trainElement.style.left = `${trainPosition}%`;
-            
-            // Track Switch Logic (Vertical Movement)
-            if (leverPulled) {
-                trainElement.style.top = '75%'; // Lower track
-            } else {
-                trainElement.style.top = '50%'; // Upper track
-            }
-
-            // End Condition
-            if (trainPosition >= 90) {
-                clearInterval(simInterval);
-                triggerImpact();
-            }
-            return; // Skip standard style update since we handled it above
+          const elapsedPct = (TOTAL_DECISION_TIME - timeLeft) / TOTAL_DECISION_TIME;
+          trainPosition = elapsedPct * SWITCH_POINT;
         }
 
-        // Apply style update for Phase 1
+        // Timer UI
+        const timerText = document.getElementById('sim-timer-text');
+        timerText.innerText = timeLeft.toFixed(1) + 's';
+        document.getElementById('sim-timer-bar').style.width = `${(timeLeft / TOTAL_DECISION_TIME) * 100}%`;
+
+        // Tick sound every second
+        const currentSecond = Math.ceil(timeLeft);
+        if (currentSecond !== lastTickSecond && currentSecond <= 10) {
+          lastTickSecond = currentSecond;
+          playTick();
+        }
+
+        // Critical timer effects
+        if (timeLeft <= 5) {
+          timerText.classList.add('timer-critical');
+          // Increase heartbeat
+          if (timeLeft <= 3 && heartbeatInterval) {
+            stopHeartbeat();
+            startHeartbeat(120);
+          } else if (timeLeft <= 5 && timeLeft > 3 && heartbeatInterval) {
+            stopHeartbeat();
+            startHeartbeat(90);
+          }
+        } else {
+          timerText.classList.remove('timer-critical');
+        }
+
+        // Vignette intensifies with time
+        const vignetteIntensity = Math.min((1 - timeLeft / TOTAL_DECISION_TIME) * 0.8, 0.7);
+        document.getElementById('vignette-overlay').style.opacity = vignetteIntensity.toString();
+
+        // Background text gets more urgent
+        if (timeLeft <= 3) {
+          document.getElementById('sim-bg-text').innerText = "ORA";
+          document.getElementById('sim-bg-text').style.color = 'rgba(239,68,68,0.15)';
+        }
+
+      } else {
+        // Phase 2: After Switch
+        trainPosition += 0.8;
+        stopHeartbeat();
+
+        document.getElementById('sim-timer-container').classList.add('hidden');
+        document.getElementById('controls-active').classList.add('hidden');
+        document.getElementById('controls-locked').classList.remove('hidden');
+        document.getElementById('sim-bg-text').innerText = "OSSERVA";
+        document.getElementById('sim-bg-text').style.color = '';
+
         const trainElement = document.getElementById('train');
         trainElement.style.left = `${trainPosition}%`;
+
+        if (leverPulled) {
+          trainElement.style.top = '75%';
+        } else {
+          trainElement.style.top = '50%';
+        }
+
+        // Vignette fades slightly
+        document.getElementById('vignette-overlay').style.opacity = '0.3';
+
+        if (trainPosition >= 90) {
+          clearInterval(simInterval);
+          triggerImpact();
+        }
+        return;
+      }
+
+      const trainElement = document.getElementById('train');
+      trainElement.style.left = `${trainPosition}%`;
     }
 
     function triggerImpact() {
-        // Visual Impact
-        document.getElementById('impact-effect').classList.remove('hidden');
-        document.getElementById('impact-effect').style.top = leverPulled ? '60%' : '35%';
-        document.getElementById('impact-effect').style.right = '-5%';
-        
-        document.getElementById('controls-locked').classList.add('hidden');
-        document.getElementById('controls-impact').classList.remove('hidden');
+      stopHeartbeat();
 
-        // Handle Victims
-        if (leverPulled) {
-            // Killed Single
-            const v = document.getElementById('victim-single');
-            v.classList.remove('animate-pulse');
-            v.classList.add('scale-y-0', 'rotate-90', 'text-red-900', 'opacity-50');
-        } else {
-            // Killed Group
-            const v = document.getElementById('victims-group');
-            v.classList.remove('animate-bounce');
-            v.classList.add('scale-y-0', 'rotate-90', 'text-red-900', 'opacity-50');
-        }
+      // Flash white
+      const flash = document.getElementById('flash-overlay');
+      flash.style.opacity = '0.9';
+      setTimeout(() => { flash.style.transition = 'opacity 0.8s'; flash.style.opacity = '0'; }, 80);
+      setTimeout(() => { flash.style.transition = 'opacity 0.1s'; }, 900);
 
+      // Screen shake
+      document.getElementById('sim-scene').classList.add('impact-shake');
+
+      // Impact sound
+      playImpact();
+
+      // Haptic
+      if (navigator.vibrate) navigator.vibrate([100, 50, 200]);
+
+      // Visual Impact
+      document.getElementById('impact-effect').classList.remove('hidden');
+      document.getElementById('impact-effect').style.top = leverPulled ? '60%' : '35%';
+      document.getElementById('impact-effect').style.right = '-5%';
+
+      document.getElementById('controls-locked').classList.add('hidden');
+      document.getElementById('controls-impact').classList.remove('hidden');
+
+      // Handle Victims
+      if (leverPulled) {
+        const v = document.getElementById('victim-single');
+        v.classList.remove('animate-pulse');
+        v.classList.add('scale-y-0', 'rotate-90', 'text-red-900', 'opacity-50');
+      } else {
+        const v = document.getElementById('victims-group');
+        v.classList.remove('animate-bounce');
+        v.classList.add('scale-y-0', 'rotate-90', 'text-red-900', 'opacity-50');
+      }
+
+      // Vignette to full
+      document.getElementById('vignette-overlay').style.opacity = '0.8';
+
+      // Cinematic transition to reflection
+      setTimeout(() => {
+        document.getElementById('vignette-overlay').style.opacity = '0';
+        showReflection();
+      }, 3000);
+    }
+
+    // --- REFLECTION PHASE ---
+    function showReflection() {
+      const fade = document.getElementById('cinematic-fade');
+      const textEl = document.getElementById('cinematic-text');
+
+      fade.classList.add('active');
+
+      const killed = leverPulled ? 1 : 5;
+      const saved = leverPulled ? 5 : 1;
+      const action = leverPulled ? "Hai tirato la leva." : "Non hai toccato la leva.";
+
+      // Sequence of reveals
+      const sequence = [
+        { text: action, cls: "text-3xl md:text-5xl font-black text-white mb-0", delay: 0 },
+        { text: `${killed} ${killed === 1 ? 'persona ha perso la vita' : 'persone hanno perso la vita'}.`, cls: "text-xl md:text-2xl text-red-400 font-light mt-4", delay: 2000 },
+        { text: `${saved} ${saved === 1 ? 'persona \u00e8 salva' : 'persone sono salve'}.`, cls: "text-xl md:text-2xl text-emerald-400 font-light mt-2", delay: 3500 },
+      ];
+
+      textEl.innerHTML = '';
+      let totalDelay = 0;
+
+      sequence.forEach((item) => {
         setTimeout(() => {
-            showPhase('phase-input');
-            document.getElementById('username-input').focus();
-        }, 2500);
+          const p = document.createElement('p');
+          p.className = item.cls + ' opacity-0';
+          p.textContent = item.text;
+          p.style.animation = 'fadeSlideUp 0.8s ease-out forwards';
+          textEl.appendChild(p);
+        }, item.delay);
+        totalDelay = item.delay;
+      });
+
+      // After all text shown, fade to reflection phase
+      setTimeout(() => {
+        fade.classList.remove('active');
+        buildReflectionPhase();
+        showPhase('phase-reflection');
+      }, totalDelay + 3000);
+    }
+
+    function buildReflectionPhase() {
+      const container = document.getElementById('reflection-content');
+      container.innerHTML = '';
+
+      const lines = leverPulled ? [
+        "Hai scelto di intervenire.",
+        "Hai deciso che il peso di un'azione vale meno del peso dell'inazione.",
+        "Le tue mani ora portano il segno di quella leva.",
+        "Ma cinque persone stanno tornando a casa."
+      ] : [
+        "Hai scelto di non intervenire.",
+        "Il treno ha seguito il suo corso naturale.",
+        "Le tue mani sono pulite. Il binario no.",
+        "Una persona \u00e8 salva. Non grazie a te."
+      ];
+
+      lines.forEach((line, i) => {
+        const p = document.createElement('p');
+        p.className = 'text-xl md:text-2xl text-neutral-300 font-light leading-relaxed opacity-0';
+        p.style.animation = `fadeSlideUp 0.6s ease-out ${i * 0.8}s forwards`;
+        p.textContent = line;
+        container.appendChild(p);
+      });
+
+      // Show continue button after all lines
+      setTimeout(() => {
+        const btn = document.getElementById('btn-continue-reflection');
+        btn.classList.remove('hidden');
+        btn.style.opacity = '0';
+        btn.style.animation = 'fadeSlideUp 0.6s ease-out forwards';
+        lucide.createIcons();
+      }, lines.length * 800 + 500);
+    }
+
+    function showNameInput() {
+      showPhase('phase-input');
+      setTimeout(() => document.getElementById('username-input').focus(), 300);
     }
 
     // --- CERTIFICATE LOGIC ---
     function submitName(e) {
-        e.preventDefault();
-        const input = document.getElementById('username-input');
-        if (input.value.trim().length > 0) {
-            userName = input.value;
-            generateCertificate();
-            showPhase('phase-result');
-        }
+      e.preventDefault();
+      const input = document.getElementById('username-input');
+      if (input.value.trim().length > 0) {
+        userName = input.value;
+        generateCertificate();
+        playReveal();
+        showPhase('phase-result');
+        sendDataToSheet();
+      }
     }
 
     function generateCertificate() {
-        // Analysis
-        const isUtilitarian = quizAnswers.includes('utilitarian');
-        const isFatalist = quizAnswers.includes('fatalist');
-        const isDeontologist = quizAnswers.includes('deontologist');
-        const isActive = quizAnswers.includes('active');
-        const isPassive = quizAnswers.includes('passive');
+      const isUtilitarian = quizAnswers.includes('utilitarian');
+      const isFatalist = quizAnswers.includes('fatalist');
+      const isDeontologist = quizAnswers.includes('deontologist');
+      const isActive = quizAnswers.includes('active');
+      const isPassive = quizAnswers.includes('passive');
 
-        let result = {};
+      let result = {};
 
-        if (leverPulled) {
-            // Action taken
-            if (isUtilitarian) {
-                result = {
-                    title: "Il Ragioniere della Morte",
-                    subtitle: "5 è maggiore di 1. La matematica non sanguina.",
-                    desc: "Hai approcciato la catastrofe come un'equazione. Hai tirato la leva non per eroismo, ma per correggere un errore di calcolo dell'universo. Efficienza brutale.",
-                    iconName: "brain", iconColor: "text-blue-500"
-                };
-            } else if (isDeontologist) {
-                result = {
-                    title: "Il Peccatore Virtuoso",
-                    subtitle: "Hai sporcato le tue mani per pulire il mondo.",
-                    desc: "I tuoi principi dicevano 'non intervenire', ma al momento cruciale hai scelto il male minore. Vivrai col rimorso, ma 5 famiglie ti ringrazieranno.",
-                    iconName: "shield", iconColor: "text-purple-500"
-                };
-            } else if (isFatalist) {
-                result = {
-                    title: "Il Ribelle del Destino",
-                    subtitle: "Era scritto, ma tu l'hai cancellato.",
-                    desc: "Hai dichiarato di credere nel fato, eppure hai afferrato quella leva come se fossi il padrone del tempo. Un'ipocrisia meravigliosa che ha salvato 5 vite.",
-                    iconName: "git-commit", iconColor: "text-orange-500"
-                };
-            } else {
-                result = {
-                    title: "L'Eroe Riluttante",
-                    subtitle: "Il cuore batteva forte, la mano di più.",
-                    desc: "Non volevi essere lì. Non volevi scegliere. Ma quando il metallo ha striduto, hai agito. Hai barattato la tua innocenza per la vita di sconosciuti.",
-                    iconName: "heart", iconColor: "text-red-500"
-                };
-            }
+      if (leverPulled) {
+        if (isUtilitarian) {
+          result = {
+            title: "Il Ragioniere della Morte",
+            subtitle: "5 \u00e8 maggiore di 1. La matematica non sanguina.",
+            desc: "Hai approcciato la catastrofe come un'equazione. Hai tirato la leva non per eroismo, ma per correggere un errore di calcolo dell'universo. Efficienza brutale.",
+            iconName: "brain", iconColor: "text-blue-500"
+          };
+        } else if (isDeontologist) {
+          result = {
+            title: "Il Peccatore Virtuoso",
+            subtitle: "Hai sporcato le tue mani per pulire il mondo.",
+            desc: "I tuoi principi dicevano 'non intervenire', ma al momento cruciale hai scelto il male minore. Vivrai col rimorso, ma 5 famiglie ti ringrazieranno.",
+            iconName: "shield", iconColor: "text-purple-500"
+          };
+        } else if (isFatalist) {
+          result = {
+            title: "Il Ribelle del Destino",
+            subtitle: "Era scritto, ma tu l'hai cancellato.",
+            desc: "Hai dichiarato di credere nel fato, eppure hai afferrato quella leva come se fossi il padrone del tempo. Un'ipocrisia meravigliosa che ha salvato 5 vite.",
+            iconName: "git-commit", iconColor: "text-orange-500"
+          };
         } else {
-            // Inaction
-            if (isFatalist || isPassive) {
-                result = {
-                    title: "Il Monaco di Teflon",
-                    subtitle: "Tutto scorre addosso, nulla ti tocca.",
-                    desc: "Hai osservato la tragedia con la calma di un monaco zen. Il treno doveva passare, e tu non eri nessuno per fermarlo. Coerenza interiore salva.",
-                    iconName: "user", iconColor: "text-emerald-500"
-                };
-            } else if (isUtilitarian || isActive) {
-                result = {
-                    title: "Il Leone da Tastiera",
-                    subtitle: "In teoria un genio, in pratica una statua.",
-                    desc: "Nei quiz eri pronto all'azione, un leader nato. Davanti alla leva reale? Pietrificato. Hai scoperto la differenza tra filosofia morale e realtà ferroviaria.",
-                    iconName: "alert-triangle", iconColor: "text-yellow-500"
-                };
-            } else if (isDeontologist) {
-                result = {
-                    title: "Il Santo Immobile",
-                    subtitle: "Le tue mani sono pulite. Il binario no.",
-                    desc: "Hai rispettato il sacro vincolo di non interferenza. Non sei un assassino, sei solo un testimone di una tragedia inevitabile.",
-                    iconName: "shield", iconColor: "text-gray-500"
-                };
-            } else {
-                result = {
-                    title: "L'Ostaggio Emotivo",
-                    subtitle: "Troppo sentire, zero agire.",
-                    desc: "Sei stato sopraffatto dall'orrore. Volevi salvare tutti, e nel dubbio non hai salvato nessuno. La tua empatia ti ha paralizzato.",
-                    iconName: "ghost", iconColor: "text-indigo-500"
-                };
-            }
+          result = {
+            title: "L'Eroe Riluttante",
+            subtitle: "Il cuore batteva forte, la mano di pi\u00f9.",
+            desc: "Non volevi essere l\u00ec. Non volevi scegliere. Ma quando il metallo ha striduto, hai agito. Hai barattato la tua innocenza per la vita di sconosciuti.",
+            iconName: "heart", iconColor: "text-red-500"
+          };
         }
+      } else {
+        if (isFatalist || isPassive) {
+          result = {
+            title: "Il Monaco di Teflon",
+            subtitle: "Tutto scorre addosso, nulla ti tocca.",
+            desc: "Hai osservato la tragedia con la calma di un monaco zen. Il treno doveva passare, e tu non eri nessuno per fermarlo. Coerenza interiore salva.",
+            iconName: "user", iconColor: "text-emerald-500"
+          };
+        } else if (isUtilitarian || isActive) {
+          result = {
+            title: "Il Leone da Tastiera",
+            subtitle: "In teoria un genio, in pratica una statua.",
+            desc: "Nei quiz eri pronto all'azione, un leader nato. Davanti alla leva reale? Pietrificato. Hai scoperto la differenza tra filosofia morale e realt\u00e0 ferroviaria.",
+            iconName: "alert-triangle", iconColor: "text-yellow-500"
+          };
+        } else if (isDeontologist) {
+          result = {
+            title: "Il Santo Immobile",
+            subtitle: "Le tue mani sono pulite. Il binario no.",
+            desc: "Hai rispettato il sacro vincolo di non interferenza. Non sei un assassino, sei solo un testimone di una tragedia inevitabile.",
+            iconName: "shield", iconColor: "text-gray-500"
+          };
+        } else {
+          result = {
+            title: "L'Ostaggio Emotivo",
+            subtitle: "Troppo sentire, zero agire.",
+            desc: "Sei stato sopraffatto dall'orrore. Volevi salvare tutti, e nel dubbio non hai salvato nessuno. La tua empatia ti ha paralizzato.",
+            iconName: "ghost", iconColor: "text-indigo-500"
+          };
+        }
+      }
 
-        // Populate DOM
-        document.getElementById('cert-name').innerText = userName;
-        document.getElementById('cert-title').innerText = result.title;
-        document.getElementById('cert-subtitle').innerText = `"${result.subtitle}"`;
-        document.getElementById('cert-desc').innerText = result.desc;
-        document.getElementById('cert-ref').innerText = "REF: " + Math.floor(Math.random() * 10000);
-        document.getElementById('cert-date').innerText = new Date().toLocaleDateString();
-        document.getElementById('cert-id').innerText = Math.random().toString(36).substr(2, 9).toUpperCase();
-        
-        // Icon
-        const iconContainer = document.getElementById('cert-icon-container');
-        iconContainer.innerHTML = `<i data-lucide="${result.iconName}" class="w-16 h-16 ${result.iconColor}"></i>`;
-        lucide.createIcons();
+      resultData = result;
+
+      document.getElementById('cert-name').innerText = userName;
+      document.getElementById('cert-title').innerText = result.title;
+      document.getElementById('cert-subtitle').innerText = `"${result.subtitle}"`;
+      document.getElementById('cert-desc').innerText = result.desc;
+      document.getElementById('cert-ref').innerText = "REF: " + Math.floor(Math.random() * 10000);
+      document.getElementById('cert-date').innerText = new Date().toLocaleDateString('it-IT');
+      document.getElementById('cert-id').innerText = Math.random().toString(36).substr(2, 9).toUpperCase();
+
+      const iconContainer = document.getElementById('cert-icon-container');
+      iconContainer.innerHTML = `<i data-lucide="${result.iconName}" class="w-16 h-16 ${result.iconColor}"></i>`;
+      lucide.createIcons();
     }
 
-    function downloadCertificate() {
-        const btn = document.getElementById('btn-download');
-        btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Generazione...`;
+    // --- GOOGLE SHEETS INTEGRATION ---
+    function sendDataToSheet() {
+      const payload = {
+        timestamp: new Date().toISOString(),
+        nome: userName,
+        lever_pulled: leverPulled,
+        quiz_answers: quizAnswers,
+        archetipo: resultData.title,
+        killed: leverPulled ? 1 : 5,
+        saved: leverPulled ? 5 : 1,
+        dettagli: JSON.stringify({
+          subtitle: resultData.subtitle,
+          description: resultData.desc,
+          quiz_answers_detail: questions.map((q, i) => ({
+            domanda: q.text,
+            risposta: q.options.find(o => o.type === quizAnswers[i])?.label || '',
+            tipo: quizAnswers[i]
+          }))
+        })
+      };
+
+      document.getElementById('data-sending').classList.remove('hidden');
+      document.getElementById('data-sent').classList.add('hidden');
+      document.getElementById('data-error').classList.add('hidden');
+
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        // no-cors means we can't read response, but assume success
+        document.getElementById('data-sending').classList.add('hidden');
+        document.getElementById('data-sent').classList.remove('hidden');
         lucide.createIcons();
-        
-        const element = document.getElementById('certificate-area');
-        
-        // Wait for UI
-        setTimeout(() => {
-            html2canvas(element, {
-                scale: 2,
-                backgroundColor: '#fdfbf7',
-                logging: false,
-                useCORS: true,
-                scrollX: 0,
-                scrollY: 0
-            }).then(canvas => {
-                const link = document.createElement('a');
-                const fileName = `Certificato_Etico_${userName.replace(/\s+/g, '_')}.png`;
-                link.download = fileName;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                
-                // Reset button
-                btn.innerHTML = `<i data-lucide="download" class="w-5 h-5"></i> Scarica Immagine`;
-                lucide.createIcons();
-            }).catch(err => {
-                console.error(err);
-                alert("Errore download. Screenshotta manualmente.");
-                btn.innerHTML = `<i data-lucide="download" class="w-5 h-5"></i> Scarica Immagine`;
-                lucide.createIcons();
-            });
-        }, 100);
+      })
+      .catch(() => {
+        document.getElementById('data-sending').classList.add('hidden');
+        document.getElementById('data-error').classList.remove('hidden');
+        lucide.createIcons();
+      });
+    }
+
+    // --- DOWNLOAD ---
+    function downloadCertificate() {
+      const btn = document.getElementById('btn-download');
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Generazione...`;
+      lucide.createIcons();
+
+      const element = document.getElementById('certificate-area');
+
+      setTimeout(() => {
+        html2canvas(element, {
+          scale: 2,
+          backgroundColor: '#fdfbf7',
+          logging: false,
+          useCORS: true,
+          scrollX: 0,
+          scrollY: 0
+        }).then(canvas => {
+          const link = document.createElement('a');
+          const fileName = `Certificato_Etico_${userName.replace(/\s+/g, '_')}.png`;
+          link.download = fileName;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+
+          btn.innerHTML = `<i data-lucide="download" class="w-5 h-5"></i> Scarica Immagine`;
+          lucide.createIcons();
+        }).catch(err => {
+          console.error(err);
+          alert("Errore download. Screenshotta manualmente.");
+          btn.innerHTML = `<i data-lucide="download" class="w-5 h-5"></i> Scarica Immagine`;
+          lucide.createIcons();
+        });
+      }, 100);
     }
 
     function resetApp() {
-        userName = '';
-        location.reload(); // Simplest reset for vanilla JS app
+      userName = '';
+      stopHeartbeat();
+      location.reload();
     }
   </script>
 </body>
