@@ -609,7 +609,7 @@
   <!-- === LOGIC === -->
   <script>
     // --- CONFIG ---
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzgfrSjNSRtKotDFqAjhHcyRRQ7cFPEYw02R4gd3ryziJZC_XPyEO8fmrI6H2kOMq0/exec"; // URL del deploy Apps Script
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxsqlbRF9Gq6q2O6iP58lBTd8WE2pKxXXfpBcoeYeFnITQ_8HWB3OEZ8gIxngGlJQhJ/exec"; // URL del deploy Apps Script
 
     // --- STATE ---
     let quizAnswers = [];
@@ -1213,6 +1213,7 @@
     // --- GOOGLE SHEETS INTEGRATION ---
     function sendDataToSheet() {
       const payload = {
+        sheet: "dilemma",
         timestamp: new Date().toISOString(),
         nome: userName,
         lever_pulled: leverPulled,
