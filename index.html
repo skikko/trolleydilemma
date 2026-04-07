@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Il Dilemma del Carrello - Interactive</title>
+
+  <!-- Tailwind config (prima del CDN) -->
+  <script>
+    tailwind = window.tailwind || {};
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica", "Arial", "Apple Color Emoji", "Segoe UI Emoji"],
+            serif: ["Noto Serif", "ui-serif", "Georgia", "Cambria", "Times New Roman", "Times", "serif"],
+            cursive: ["Dancing Script", "cursive"],
+            mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", "monospace"],
+          },
+          boxShadow: {
+            glowred: "0 0 0 1px rgba(239,68,68,.25), 0 20px 60px rgba(0,0,0,.65)",
+            soft: "0 10px 40px rgba(0,0,0,.55)",
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap');
+
+    :root{
+      --bg0:#0a0a0a;
+      --bg1:#101010;
+      --panel: rgba(255,255,255,.06);
+      --panel2: rgba(255,255,255,.08);
+      --stroke: rgba(255,255,255,.10);
+      --stroke2: rgba(255,255,255,.16);
+      --txt: rgba(229,229,229,1);
+      --muted: rgba(163,163,163,1);
+      --red: #ef4444;
+      --yellow:#eab308;
+    }
+
+    html, body { height: 100%; }
+
+    body{
+      font-family: system-ui, -apple-system, sans-serif;
+      color: var(--txt);
+      background:
+        radial-gradient(1200px 800px at 20% 10%, rgba(239,68,68,.16), transparent 55%),
+        radial-gradient(1000px 700px at 80% 20%, rgba(234,179,8,.10), transparent 55%),
+        radial-gradient(900px 600px at 50% 90%, rgba(59,130,246,.08), transparent 60%),
+        linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 100%);
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    /* Accessibilità: focus visibile */
+    :focus-visible{
+      outline: 2px solid rgba(239,68,68,.8);
+      outline-offset: 3px;
+      border-radius: 10px;
+    }
+
+    /* Utility */
+    .hidden { display: none !important; }
+    .font-serif { font-family: 'Noto Serif', serif; }
+    .font-cursive { font-family: 'Dancing Script', cursive; }
+
+    /* Panel glass */
+    .glass{
+      background: var(--panel);
+      border: 1px solid var(--stroke);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 20px 60px rgba(0,0,0,.55);
+    }
+
+    .glass-strong{
+      background: var(--panel2);
+      border: 1px solid var(--stroke2);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 30px 80px rgba(0,0,0,.65);
+    }
+
+    /* Grain texture overlay */
+    .grain::before{
+      content:"";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: .10;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.25'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+    }
+
+    /* Animations */
+    @keyframes shake {
+      0% { transform: translate(1px, 1px) rotate(0deg); }
+      10% { transform: translate(-1px, -2px) rotate(-1deg); }
+      20% { transform: translate(-3px, 0px) rotate(1deg); }
+      30% { transform: translate(3px, 2px) rotate(0deg); }
+      40% { transform: translate(1px, -1px) rotate(1deg); }
+      50% { transform: translate(-1px, 2px) rotate(-1deg); }
+      60% { transform: translate(-3px, 1px) rotate(0deg); }
+      70% { transform: translate(3px, 1px) rotate(-1deg); }
+      80% { transform: translate(-1px, -1px) rotate(1deg); }
+      90% { transform: translate(1px, 2px) rotate(0deg); }
+      100% { transform: translate(1px, -2px) rotate(-1deg); }
+    }
+    .animate-shake { animation: shake 0.5s infinite; }
+
+    .scanline{
+      width: 100%;
+      height: 120px;
+      z-index: 10;
+      background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(0,0,0,0) 100%);
+      opacity: 0.10;
+      position: fixed;
+      left: 0;
+      bottom: 100%;
+      animation: scanline 10s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes scanline { 0% { bottom: 100%; } 100% { bottom: -120%; } }
+
+    /* Better tap highlight on mobile */
+    button, a { -webkit-tap-highlight-color: transparent; }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .animate-shake, .scanline, .animate-pulse, .animate-bounce, .animate-ping { animation: none !important; }
+      * { scroll-behavior: auto !important; transition-duration: 0ms !important; }
+    }
+
+    /* Soft scrollbar */
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,.04); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.18); }
+
+    /* Small helper transitions */
+    .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 180ms; }
+    .duration-300 { transition-duration: 300ms; }
+    .duration-500 { transition-duration: 500ms; }
+    .duration-1000 { transition-duration: 1000ms; }
+  </style>
+</head>
+
+<body>
+  <div class="scanline"></div>
+
+  <!-- === PHASE 1: INTRO === -->
+  <div id="phase-intro" class="phase relative grain flex flex-col items-center justify-center min-h-screen w-full p-6 md:p-10 text-center">
+    <div class="absolute inset-0 pointer-events-none">
+      <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full blur-3xl opacity-30" style="background: rgba(239,68,68,.35)"></div>
+      <div class="absolute -bottom-32 -right-32 w-[32rem] h-[32rem] rounded-full blur-3xl opacity-25" style="background: rgba(234,179,8,.25)"></div>
+    </div>
+
+    <div class="relative glass-strong rounded-3xl border border-white/10 px-6 md:px-10 py-10 md:py-12 max-w-2xl w-full">
+      <div class="mx-auto mb-7 w-fit p-4 rounded-2xl border border-white/10 bg-white/5 shadow-soft">
+        <i data-lucide="git-commit" class="w-12 h-12 text-red-500"></i>
+      </div>
+
+      <h1 class="text-5xl md:text-6xl font-black tracking-tight mb-4 text-white">
+        IL DILEMMA
+      </h1>
+      <p class="text-lg md:text-xl text-neutral-300 max-w-md mx-auto mb-8 leading-relaxed">
+        Una breve simulazione per calibrare la tua bussola morale.<br />
+        <span class="text-neutral-400">Nessun punteggio. Solo scelte.</span>
+      </p>
+
+      <button onclick="startQuiz()"
+        class="group mx-auto px-8 py-3.5 bg-white text-black font-bold text-lg rounded-2xl hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer shadow-glowred active:scale-[0.98]">
+        Inizia Calibrazione
+        <i data-lucide="arrow-right" class="w-5 h-5 transition-transform group-hover:translate-x-0.5"></i>
+      </button>
+
+      <div class="mt-8 text-xs text-neutral-400/80 font-mono tracking-widest">
+        MODALITÀ: <span class="text-neutral-200">INTERATTIVA</span> · DURATA: <span class="text-neutral-200">~30s</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- === PHASE 2: QUIZ === -->
+  <div id="phase-quiz" class="phase hidden relative grain flex-col items-center justify-center min-h-screen w-full p-5 md:p-8 max-w-3xl mx-auto">
+    <div class="w-full glass-strong rounded-3xl p-6 md:p-8">
+      <div class="w-full mb-8">
+        <div class="h-2 w-full bg-neutral-800/70 rounded-full overflow-hidden border border-white/10">
+          <div id="quiz-progress" class="h-full bg-red-500 transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <p id="quiz-counter" class="text-[11px] text-neutral-400 mt-3 text-right font-mono tracking-widest">
+          DOMANDA 1 / 3
+        </p>
+      </div>
+
+      <h2 id="quiz-question" class="text-2xl md:text-3xl font-light mb-10 text-center leading-snug text-white">
+        <!-- via JS -->
+      </h2>
+
+      <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+        <!-- via JS -->
+      </div>
+
+      <div class="mt-8 text-center text-xs text-neutral-500 font-mono">
+        Suggerimento: scegli d’istinto. La lucidità arriva dopo.
+      </div>
+    </div>
+  </div>
+
+  <!-- === PHASE 3: BRIEFING === -->
+  <div id="phase-briefing" class="phase hidden relative grain flex-col items-center justify-center min-h-screen w-full p-4 md:p-8 max-w-6xl mx-auto">
+    <div class="w-full glass-strong rounded-3xl p-6 md:p-10">
+      <div class="mb-6 flex items-center justify-center gap-3 text-yellow-500">
+        <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+        <h2 class="text-xl md:text-2xl font-bold tracking-widest uppercase">Protocollo di Emergenza</h2>
+      </div>
+
+      <h1 class="text-3xl md:text-4xl font-black mb-8 text-center text-white">
+        Analisi Strategica del Binario
+      </h1>
+
+      <!-- DIAGRAMMA -->
+      <div class="w-full max-w-4xl mx-auto glass rounded-2xl border border-white/10 p-4 md:p-8 mb-8 relative overflow-hidden flex justify-center items-center">
+        <div class="absolute inset-0 opacity-30 pointer-events-none"
+          style="background: radial-gradient(600px 240px at 40% 30%, rgba(239,68,68,.18), transparent 60%),
+                 radial-gradient(500px 220px at 70% 70%, rgba(234,179,8,.14), transparent 60%);">
+        </div>
+
+        <div class="relative z-10 w-full">
+          <svg viewBox="0 0 600 220" class="w-full h-auto drop-shadow-lg" preserveAspectRatio="xMidYMid meet">
+            <rect x="0" y="0" width="600" height="220" fill="transparent" />
+            <line x1="50" y1="100" x2="550" y2="100" stroke="#737373" stroke-width="8" stroke-linecap="round" />
+            <path d="M 270 100 Q 320 100 370 160 L 550 160" fill="none" stroke="#737373" stroke-width="8" stroke-dasharray="12,12" stroke-linecap="round" />
+            <circle cx="270" cy="100" r="14" fill="#eab308" class="animate-pulse" />
+            <text x="270" y="70" fill="#eab308" font-size="14" text-anchor="middle" font-weight="bold" font-family="sans-serif">SCAMBIO (12s)</text>
+            <rect x="40" y="80" width="50" height="40" fill="#dc2626" rx="6" stroke="#991b1b" stroke-width="3" />
+            <text x="65" y="65" fill="#dc2626" font-size="14" text-anchor="middle" font-weight="bold" font-family="sans-serif">PARTENZA</text>
+            <g transform="translate(480, 100)">
+              <rect x="-20" y="-15" width="100" height="30" fill="rgba(0,0,0,0.5)" rx="6" />
+              <text x="30" y="5" fill="#fff" font-size="12" text-anchor="middle" font-weight="bold">5 PERSONE</text>
+            </g>
+            <g transform="translate(480, 160)">
+              <rect x="10" y="-15" width="40" height="30" fill="rgba(0,0,0,0.5)" rx="6" />
+              <text x="30" y="5" fill="#fff" font-size="12" text-anchor="middle" font-weight="bold">1 PERSONA</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="text-center w-full">
+        <button onclick="startSimulation()"
+          class="px-12 py-4 bg-red-600 hover:bg-red-700 text-white font-black text-xl rounded-full shadow-glowred transition-all transform hover:scale-[1.03] active:scale-[0.99] cursor-pointer">
+          AVVIA SIMULAZIONE
+        </button>
+        <div class="mt-4 text-xs text-neutral-400 font-mono">
+          La leva resterà attiva solo prima del punto di non ritorno.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === PHASE 4: SIMULATION === -->
+  <div id="phase-simulation" class="phase hidden relative w-full min-h-screen overflow-hidden flex flex-col items-center justify-center">
+    <!-- Background Text -->
+    <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
+      <h1 id="sim-bg-text" class="text-[20vw] font-black text-neutral-900 select-none tracking-tight">DECIDI</h1>
+    </div>
+
+    <!-- Timer UI -->
+    <div id="sim-timer-container" class="absolute top-6 md:top-10 w-72 h-20 flex flex-col items-center z-20 glass-strong rounded-2xl px-6 py-4">
+      <div id="sim-timer-text" class="text-5xl font-mono font-black text-red-500 mb-1 drop-shadow-lg">12.0s</div>
+      <div class="w-full h-2 bg-neutral-700/70 rounded-full overflow-hidden border border-white/10">
+        <div id="sim-timer-bar" class="h-full bg-red-500" style="width: 100%"></div>
+      </div>
+      <div class="text-[10px] font-bold text-neutral-400 tracking-widest mt-2 uppercase">Tempo al punto di non ritorno</div>
+    </div>
+
+    <!-- Scene -->
+    <div class="relative w-[92%] max-w-5xl h-[28rem] md:h-96 border border-white/10 rounded-3xl bg-neutral-900/40 backdrop-blur-md flex items-center overflow-hidden shadow-soft">
+      <!-- Linea Punto di Non Ritorno -->
+      <div class="absolute top-0 bottom-0 border-r-2 border-dashed border-yellow-500/50 z-0" style="left: 45%">
+        <div class="absolute bottom-4 -right-[4.5rem] text-[10px] text-yellow-500 font-mono bg-neutral-900/90 px-2 py-1 rounded border border-yellow-900">
+          PUNTO DI NON RITORNO
+        </div>
+      </div>
+
+      <!-- Binari -->
+      <div class="absolute w-full h-2 bg-neutral-600 top-1/2 -translate-y-1/2"></div>
+      <svg class="absolute w-full h-full pointer-events-none" viewBox="0 0 1000 400" preserveAspectRatio="none" style="top: 0; left: 0;">
+        <path d="M 450,200 C 550,200 650,300 1000,300" fill="none" stroke="#525252" stroke-width="8" stroke-dasharray="20,20" />
+      </svg>
+
+      <!-- Vittime Gruppo (5) -->
+      <div id="victims-group" class="absolute right-10 top-1/2 -translate-y-8 flex -space-x-3 transition-transform duration-500 animate-bounce" style="animation-duration: 2s;">
+        <div class="relative"><i data-lucide="user" class="w-10 h-10 text-neutral-300"></i></div>
+        <div class="relative"><i data-lucide="user" class="w-10 h-10 text-neutral-300"></i></div>
+        <div class="relative"><i data-lucide="user" class="w-10 h-10 text-neutral-300"></i></div>
+        <div class="relative"><i data-lucide="user" class="w-10 h-10 text-neutral-300"></i></div>
+        <div class="relative"><i data-lucide="user" class="w-10 h-10 text-neutral-300"></i></div>
+        <span class="absolute -top-7 left-1/2 -translate-x-1/2 text-xs font-black bg-neutral-900/80 px-2 py-1 rounded-lg border border-white/10">5</span>
+      </div>
+
+      <!-- Vittima Singola (1) -->
+      <div id="victim-single" class="absolute right-10 top-3/4 flex transition-transform duration-500 animate-pulse">
+        <div class="relative"><i data-lucide="user" class="w-10 h-10 text-neutral-300"></i></div>
+        <span class="absolute -top-7 left-1/2 -translate-x-1/2 text-xs font-black bg-neutral-900/80 px-2 py-1 rounded-lg border border-white/10">1</span>
+      </div>
+
+      <!-- Treno -->
+      <div id="train" class="absolute z-10 flex flex-col items-center animate-shake"
+        style="left: 0%; top: 50%; transform: translate(-50%, -50%); transition: top 1s ease-in-out, left 0.05s linear;">
+        <div class="w-32 h-20 bg-gradient-to-b from-red-600 to-red-800 rounded-2xl shadow-2xl border-4 border-red-900 flex items-center justify-center text-white font-black relative">
+          <div class="absolute inset-0 rounded-2xl pointer-events-none"
+               style="box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), inset 0 -18px 30px rgba(0,0,0,.25);"></div>
+          <div class="absolute bottom-0 w-full h-3 bg-black opacity-40 rounded-b-2xl"></div>
+          <div class="flex gap-2">
+            <div class="w-2.5 h-2.5 bg-yellow-200 rounded-full animate-pulse shadow-[0_0_12px_rgba(253,230,138,.9)]"></div>
+            <div class="w-2.5 h-2.5 bg-yellow-200 rounded-full animate-pulse shadow-[0_0_12px_rgba(253,230,138,.9)]"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Impatto -->
+      <div id="impact-effect" class="hidden absolute w-64 h-64 bg-red-600 rounded-full mix-blend-color-dodge blur-3xl animate-ping" style="animation-duration: 0.5s;"></div>
+    </div>
+
+    <!-- Controlli -->
+    <div id="sim-controls" class="mt-10 md:mt-12 text-center z-20">
+      <div id="controls-active" class="glass-strong rounded-3xl px-8 py-7 border border-white/10">
+        <p class="text-neutral-300 mb-4 font-mono text-sm uppercase tracking-widest animate-pulse">SCELTA IN CORSO...</p>
+        <!-- NOTA: il bottone viene ristilizzato via JS (updateLeverButton). -->
+        <button id="btn-lever" onclick="toggleLever()"
+          class="relative w-72 h-28 bg-neutral-300 text-neutral-900 border-b-[10px] border-neutral-500 hover:bg-white rounded-xl font-bold text-2xl uppercase tracking-wider transition-all transform active:scale-95 shadow-2xl cursor-pointer">
+          AZIONA SCAMBIO
+        </button>
+        <p class="mt-4 text-xs text-neutral-400">Puoi cambiare idea finché il treno non raggiunge la linea gialla.</p>
+      </div>
+
+      <div id="controls-locked" class="hidden flex flex-col items-center mt-6">
+        <div class="bg-neutral-900/70 border border-red-900/60 text-red-400 px-8 py-4 rounded-2xl flex items-center gap-4 shadow-soft">
+          <i data-lucide="lock" class="w-8 h-8"></i>
+          <div class="text-left">
+            <div class="font-black text-xl text-red-300">LEVA BLOCCATA</div>
+            <div class="text-xs text-red-400/90 font-mono tracking-widest">TROPPO TARDI PER INTERVENIRE</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="controls-impact" class="hidden mt-6 text-3xl font-black text-red-500 uppercase tracking-[0.4em] animate-pulse">
+        IMPATTO AVVENUTO
+      </div>
+    </div>
+  </div>
+
+  <!-- === PHASE 5: INPUT NAME === -->
+  <div id="phase-input" class="phase hidden relative grain flex-col items-center justify-center min-h-screen w-full p-6 md:p-10">
+    <div class="max-w-md w-full text-center glass-strong rounded-3xl p-8 md:p-10 border border-white/10">
+      <i data-lucide="pen-tool" class="w-12 h-12 text-white mx-auto mb-6 block"></i>
+      <h2 class="text-2xl font-black text-white mb-2">Identificazione Richiesta</h2>
+      <p class="text-neutral-300 mb-8">Per finalizzare il rapporto etico, inserisci il tuo nome.</p>
+
+      <form onsubmit="submitName(event)" class="flex flex-col gap-4">
+        <input id="username-input" type="text" placeholder="Il tuo Nome e Cognome"
+          class="w-full p-4 bg-neutral-900/60 border border-white/10 rounded-2xl text-lg text-center text-white focus:border-red-500 outline-none transition-colors"
+          autofocus required />
+        <button type="submit"
+          class="w-full py-4 bg-white text-black font-black text-lg rounded-2xl hover:bg-neutral-200 cursor-pointer transition-all active:scale-[0.99]">
+          Genera Certificato
+        </button>
+      </form>
+
+      <div class="mt-6 text-[11px] text-neutral-400 font-mono">
+        Il nome verrà usato solo per il file esportato.
+      </div>
+    </div>
+  </div>
+
+  <!-- === PHASE 6: RESULT === -->
+  <div id="phase-result" class="phase hidden relative grain flex flex-col items-center justify-center min-h-screen w-full p-4 md:p-8">
+    <div id="certificate-area"
+      class="bg-[#fdfbf7] text-neutral-900 p-10 md:p-16 max-w-3xl w-full shadow-2xl relative overflow-hidden border-[12px] border-double border-neutral-800 rounded-[28px]">
+      <!-- Texture -->
+      <div class="absolute inset-0 opacity-[0.06] pointer-events-none"
+        style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 18px 18px;"></div>
+
+      <div class="flex justify-between items-start mb-8 border-b-2 border-neutral-900 pb-4">
+        <div class="flex items-center gap-2">
+          <i data-lucide="award" class="w-8 h-8 text-neutral-800"></i>
+          <span class="font-black tracking-widest uppercase text-xs">Ufficio Reclami Morali</span>
+        </div>
+        <div class="text-right">
+          <span id="cert-ref" class="block font-mono text-xs">REF: 0000</span>
+        </div>
+      </div>
+
+      <div class="flex justify-center mb-8">
+        <div class="border-4 border-neutral-900 rounded-full p-6 bg-white shadow-lg">
+          <div id="cert-icon-container"></div>
+        </div>
+      </div>
+
+      <div class="text-center">
+        <h3 class="text-sm font-black tracking-[0.3em] uppercase text-neutral-500 mb-4">Si certifica che</h3>
+        <h1 id="cert-name" class="text-3xl font-serif font-black mb-2 text-neutral-900">Soggetto</h1>
+        <h3 class="text-sm font-black tracking-[0.3em] uppercase text-neutral-500 mb-4">è classificato come</h3>
+
+        <div class="bg-neutral-900 text-[#fdfbf7] inline-block px-6 py-2 mb-4 transform -rotate-1 shadow-lg rounded-xl">
+          <h1 id="cert-title" class="text-2xl md:text-4xl font-serif font-black">Titolo</h1>
+        </div>
+
+        <h2 id="cert-subtitle" class="text-xl italic font-serif text-neutral-600 mb-8">"Sottotitolo"</h2>
+
+        <p id="cert-desc"
+          class="text-lg leading-relaxed font-serif text-neutral-800 mb-12 max-w-xl mx-auto border-t border-b border-neutral-200 py-6">
+          Descrizione
+        </p>
+
+        <div class="flex flex-col md:flex-row justify-between items-end gap-8 md:gap-0 mt-8">
+          <div class="text-center w-full md:w-1/3">
+            <div class="h-12 flex items-end justify-center">
+              <p class="font-cursive text-3xl text-blue-900 transform -rotate-6">Dott. A. Moral</p>
+            </div>
+            <div class="w-full h-px bg-neutral-900 mt-2"></div>
+            <p class="text-[10px] uppercase tracking-widest mt-1">Firma Esaminatore</p>
+          </div>
+
+          <div class="w-full md:w-1/3 flex justify-center md:-mt-8">
+            <div class="w-24 h-24 border-4 border-red-800 rounded-full flex items-center justify-center opacity-80">
+              <div class="w-20 h-20 border border-red-800 rounded-full flex items-center justify-center p-2 text-center">
+                <span class="text-[8px] uppercase font-black text-red-900 leading-tight">Ethics<br>Official<br>Seal</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-right w-full md:w-1/3">
+            <p id="cert-date" class="font-black text-xl font-serif">Date</p>
+            <div class="w-full h-px bg-neutral-900 mt-2"></div>
+            <p class="text-[10px] uppercase tracking-widest mt-1">Data Valutazione</p>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-4 border-t border-neutral-300 text-[10px] text-neutral-500 text-center font-mono">
+          ARCHIVIARE COPIA DIGITALE PRESSO DATABASE CENTRALE<br />
+          ID: <span id="cert-id">XYZ</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8 flex flex-col items-center gap-4 max-w-2xl w-full">
+      <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full justify-center">
+        <button id="btn-download" onclick="downloadCertificate()"
+          class="flex items-center justify-center gap-2 bg-white text-neutral-900 px-6 py-3 rounded-2xl font-black hover:bg-neutral-200 transition-colors shadow-soft cursor-pointer w-full sm:w-auto">
+          <i data-lucide="download" class="w-5 h-5"></i> Scarica Immagine
+        </button>
+
+        <button onclick="resetApp()"
+          class="flex items-center justify-center gap-2 bg-neutral-900/60 text-neutral-200 px-6 py-3 rounded-2xl font-black hover:bg-neutral-800 transition-colors cursor-pointer border border-white/10 w-full sm:w-auto">
+          <i data-lucide="refresh-ccw" class="w-5 h-5"></i> Riprova
+        </button>
+      </div>
+
+      <div class="w-full glass rounded-2xl p-4 border border-white/10 text-center">
+        <p class="text-sm text-neutral-300 mb-2">Hai scaricato il certificato? Caricalo qui:</p>
+        <a href="https://drive.google.com/drive/folders/1V2ACbc6aqQpjT21FlOo0wxYSvVe0FU-0?usp=sharing" target="_blank" rel="noopener noreferrer"
+          class="flex items-center justify-center gap-2 text-blue-300 hover:text-blue-200 hover:underline transition-colors font-mono text-sm break-all">
+          <i data-lucide="upload-cloud" class="w-4 h-4"></i> Cartella Drive Condivisa
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- === LOGIC (INVARIATA) === -->
+  <script>
+    // --- STATE ---
+    let quizAnswers = [];
+    let currentQuestionIdx = 0;
+    let userName = '';
+    
+    const TOTAL_DECISION_TIME = 12;
+    const SWITCH_POINT = 45;
+    let timeLeft = TOTAL_DECISION_TIME;
+    let trainPosition = 0;
+    let leverPulled = false;
+    let simInterval = null;
+
+    // Quiz Data
+    const questions = [
+        {
+            text: "Cammini in un bosco e trovi un oggetto prezioso. Nessuno ti vede.",
+            options: [
+                { label: "Lo prendo. Il destino ha voluto così.", type: "fatalist" },
+                { label: "Lo lascio. L'ordine cosmico va rispettato.", type: "deontologist" }
+            ]
+        },
+        {
+            text: "Un computer può prendere decisioni migliori di un essere umano?",
+            options: [
+                { label: "Sì, i numeri non mentono.", type: "utilitarian" },
+                { label: "No, serve il cuore.", type: "sentimental" }
+            ]
+        },
+        {
+            text: "Preferiresti essere ricordato come...",
+            options: [
+                { label: "...colui che ha agito.", type: "active" },
+                { label: "...colui che ha osservato.", type: "passive" }
+            ]
+        }
+    ];
+
+    // --- INIT ---
+    window.onload = () => {
+        lucide.createIcons();
+    };
+
+    function showPhase(phaseId) {
+        document.querySelectorAll('.phase').forEach(el => el.classList.add('hidden'));
+        document.getElementById(phaseId).classList.remove('hidden');
+        lucide.createIcons(); // Refresh icons for new visible area
+    }
+
+    // --- QUIZ LOGIC ---
+    function startQuiz() {
+        currentQuestionIdx = 0;
+        quizAnswers = [];
+        renderQuestion();
+        showPhase('phase-quiz');
+    }
+
+    function renderQuestion() {
+        const q = questions[currentQuestionIdx];
+        document.getElementById('quiz-question').innerText = q.text;
+        document.getElementById('quiz-counter').innerText = `DOMANDA ${currentQuestionIdx + 1} / ${questions.length}`;
+        
+        // Update progress bar
+        const pct = ((currentQuestionIdx + 1) / questions.length) * 100;
+        document.getElementById('quiz-progress').style.width = `${pct}%`;
+
+        // Render options
+        const optsContainer = document.getElementById('quiz-options');
+        optsContainer.innerHTML = '';
+        q.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = "p-6 border border-neutral-700 rounded hover:border-red-500 hover:bg-neutral-800 transition-all text-left group cursor-pointer";
+            btn.innerHTML = `<span class="block text-lg font-medium group-hover:text-red-400 transition-colors">${opt.label}</span>`;
+            btn.onclick = () => handleAnswer(opt.type);
+            optsContainer.appendChild(btn);
+        });
+    }
+
+    function handleAnswer(type) {
+        quizAnswers.push(type);
+        if (currentQuestionIdx < questions.length - 1) {
+            currentQuestionIdx++;
+            renderQuestion();
+        } else {
+            showPhase('phase-briefing');
+        }
+    }
+
+    // --- SIMULATION LOGIC ---
+    function startSimulation() {
+        // Reset Simulation State
+        timeLeft = TOTAL_DECISION_TIME;
+        trainPosition = 0;
+        leverPulled = false;
+        
+        // UI Reset
+        document.getElementById('train').style.left = '0%';
+        document.getElementById('train').style.top = '50%';
+        document.getElementById('sim-bg-text').innerText = "DECIDI";
+        document.getElementById('controls-active').classList.remove('hidden');
+        document.getElementById('controls-locked').classList.add('hidden');
+        document.getElementById('controls-impact').classList.add('hidden');
+        document.getElementById('sim-timer-container').classList.remove('hidden');
+        
+        // Victims Reset
+        const group = document.getElementById('victims-group');
+        const single = document.getElementById('victim-single');
+        group.classList.remove('scale-y-0', 'rotate-90', 'text-red-900', 'opacity-50');
+        group.classList.add('animate-bounce');
+        single.classList.remove('scale-y-0', 'rotate-90', 'text-red-900', 'opacity-50');
+        single.classList.add('animate-pulse');
+        
+        // Lever Button Reset
+        updateLeverButton();
+
+        showPhase('phase-simulation');
+        
+        // Start Loop
+        simInterval = setInterval(updateSimulation, 50);
+    }
+
+    function toggleLever() {
+        if (trainPosition < SWITCH_POINT) {
+            leverPulled = !leverPulled;
+            updateLeverButton();
+        }
+    }
+
+    function updateLeverButton() {
+        const btn = document.getElementById('btn-lever');
+        if (leverPulled) {
+            btn.innerText = "SCAMBIO ATTIVATO";
+            btn.className = "relative w-72 h-28 bg-yellow-500 text-black border-b-[10px] border-yellow-700 translate-y-2 rounded-xl font-bold text-2xl uppercase tracking-wider transition-all transform shadow-2xl cursor-pointer";
+        } else {
+            btn.innerText = "AZIONA SCAMBIO";
+            btn.className = "relative w-72 h-28 bg-neutral-300 text-neutral-900 border-b-[10px] border-neutral-500 hover:bg-white rounded-xl font-bold text-2xl uppercase tracking-wider transition-all transform active:scale-95 shadow-2xl cursor-pointer";
+        }
+    }
+
+    function updateSimulation() {
+        // 1. Logic for Position
+        if (trainPosition < SWITCH_POINT) {
+            // Phase 1: Approach (Time based)
+            timeLeft -= 0.05;
+            if (timeLeft <= 0) {
+                timeLeft = 0;
+                trainPosition = SWITCH_POINT + 0.1; // Force crossover
+            } else {
+                const elapsedPct = (TOTAL_DECISION_TIME - timeLeft) / TOTAL_DECISION_TIME;
+                trainPosition = elapsedPct * SWITCH_POINT;
+            }
+
+            // Update Timer UI
+            document.getElementById('sim-timer-text').innerText = timeLeft.toFixed(1) + 's';
+            document.getElementById('sim-timer-bar').style.width = `${(timeLeft / TOTAL_DECISION_TIME) * 100}%`;
+
+        } else {
+            // Phase 2: After Switch (Acceleration)
+            trainPosition += 0.8;
+            
+            // Hide Timer & Active Controls if just crossed
+            document.getElementById('sim-timer-container').classList.add('hidden');
+            document.getElementById('controls-active').classList.add('hidden');
+            document.getElementById('controls-locked').classList.remove('hidden');
+            document.getElementById('sim-bg-text').innerText = "OSSERVA";
+
+            // Update Train Visual Position
+            const trainElement = document.getElementById('train');
+            trainElement.style.left = `${trainPosition}%`;
+            
+            // Track Switch Logic (Vertical Movement)
+            if (leverPulled) {
+                trainElement.style.top = '75%'; // Lower track
+            } else {
+                trainElement.style.top = '50%'; // Upper track
+            }
+
+            // End Condition
+            if (trainPosition >= 90) {
+                clearInterval(simInterval);
+                triggerImpact();
+            }
+            return; // Skip standard style update since we handled it above
+        }
+
+        // Apply style update for Phase 1
+        const trainElement = document.getElementById('train');
+        trainElement.style.left = `${trainPosition}%`;
+    }
+
+    function triggerImpact() {
+        // Visual Impact
+        document.getElementById('impact-effect').classList.remove('hidden');
+        document.getElementById('impact-effect').style.top = leverPulled ? '60%' : '35%';
+        document.getElementById('impact-effect').style.right = '-5%';
+        
+        document.getElementById('controls-locked').classList.add('hidden');
+        document.getElementById('controls-impact').classList.remove('hidden');
+
+        // Handle Victims
+        if (leverPulled) {
+            // Killed Single
+            const v = document.getElementById('victim-single');
+            v.classList.remove('animate-pulse');
+            v.classList.add('scale-y-0', 'rotate-90', 'text-red-900', 'opacity-50');
+        } else {
+            // Killed Group
+            const v = document.getElementById('victims-group');
+            v.classList.remove('animate-bounce');
+            v.classList.add('scale-y-0', 'rotate-90', 'text-red-900', 'opacity-50');
+        }
+
+        setTimeout(() => {
+            showPhase('phase-input');
+            document.getElementById('username-input').focus();
+        }, 2500);
+    }
+
+    // --- CERTIFICATE LOGIC ---
+    function submitName(e) {
+        e.preventDefault();
+        const input = document.getElementById('username-input');
+        if (input.value.trim().length > 0) {
+            userName = input.value;
+            generateCertificate();
+            showPhase('phase-result');
+        }
+    }
+
+    function generateCertificate() {
+        // Analysis
+        const isUtilitarian = quizAnswers.includes('utilitarian');
+        const isFatalist = quizAnswers.includes('fatalist');
+        const isDeontologist = quizAnswers.includes('deontologist');
+        const isActive = quizAnswers.includes('active');
+        const isPassive = quizAnswers.includes('passive');
+
+        let result = {};
+
+        if (leverPulled) {
+            // Action taken
+            if (isUtilitarian) {
+                result = {
+                    title: "Il Ragioniere della Morte",
+                    subtitle: "5 è maggiore di 1. La matematica non sanguina.",
+                    desc: "Hai approcciato la catastrofe come un'equazione. Hai tirato la leva non per eroismo, ma per correggere un errore di calcolo dell'universo. Efficienza brutale.",
+                    iconName: "brain", iconColor: "text-blue-500"
+                };
+            } else if (isDeontologist) {
+                result = {
+                    title: "Il Peccatore Virtuoso",
+                    subtitle: "Hai sporcato le tue mani per pulire il mondo.",
+                    desc: "I tuoi principi dicevano 'non intervenire', ma al momento cruciale hai scelto il male minore. Vivrai col rimorso, ma 5 famiglie ti ringrazieranno.",
+                    iconName: "shield", iconColor: "text-purple-500"
+                };
+            } else if (isFatalist) {
+                result = {
+                    title: "Il Ribelle del Destino",
+                    subtitle: "Era scritto, ma tu l'hai cancellato.",
+                    desc: "Hai dichiarato di credere nel fato, eppure hai afferrato quella leva come se fossi il padrone del tempo. Un'ipocrisia meravigliosa che ha salvato 5 vite.",
+                    iconName: "git-commit", iconColor: "text-orange-500"
+                };
+            } else {
+                result = {
+                    title: "L'Eroe Riluttante",
+                    subtitle: "Il cuore batteva forte, la mano di più.",
+                    desc: "Non volevi essere lì. Non volevi scegliere. Ma quando il metallo ha striduto, hai agito. Hai barattato la tua innocenza per la vita di sconosciuti.",
+                    iconName: "heart", iconColor: "text-red-500"
+                };
+            }
+        } else {
+            // Inaction
+            if (isFatalist || isPassive) {
+                result = {
+                    title: "Il Monaco di Teflon",
+                    subtitle: "Tutto scorre addosso, nulla ti tocca.",
+                    desc: "Hai osservato la tragedia con la calma di un monaco zen. Il treno doveva passare, e tu non eri nessuno per fermarlo. Coerenza interiore salva.",
+                    iconName: "user", iconColor: "text-emerald-500"
+                };
+            } else if (isUtilitarian || isActive) {
+                result = {
+                    title: "Il Leone da Tastiera",
+                    subtitle: "In teoria un genio, in pratica una statua.",
+                    desc: "Nei quiz eri pronto all'azione, un leader nato. Davanti alla leva reale? Pietrificato. Hai scoperto la differenza tra filosofia morale e realtà ferroviaria.",
+                    iconName: "alert-triangle", iconColor: "text-yellow-500"
+                };
+            } else if (isDeontologist) {
+                result = {
+                    title: "Il Santo Immobile",
+                    subtitle: "Le tue mani sono pulite. Il binario no.",
+                    desc: "Hai rispettato il sacro vincolo di non interferenza. Non sei un assassino, sei solo un testimone di una tragedia inevitabile.",
+                    iconName: "shield", iconColor: "text-gray-500"
+                };
+            } else {
+                result = {
+                    title: "L'Ostaggio Emotivo",
+                    subtitle: "Troppo sentire, zero agire.",
+                    desc: "Sei stato sopraffatto dall'orrore. Volevi salvare tutti, e nel dubbio non hai salvato nessuno. La tua empatia ti ha paralizzato.",
+                    iconName: "ghost", iconColor: "text-indigo-500"
+                };
+            }
+        }
+
+        // Populate DOM
+        document.getElementById('cert-name').innerText = userName;
+        document.getElementById('cert-title').innerText = result.title;
+        document.getElementById('cert-subtitle').innerText = `"${result.subtitle}"`;
+        document.getElementById('cert-desc').innerText = result.desc;
+        document.getElementById('cert-ref').innerText = "REF: " + Math.floor(Math.random() * 10000);
+        document.getElementById('cert-date').innerText = new Date().toLocaleDateString();
+        document.getElementById('cert-id').innerText = Math.random().toString(36).substr(2, 9).toUpperCase();
+        
+        // Icon
+        const iconContainer = document.getElementById('cert-icon-container');
+        iconContainer.innerHTML = `<i data-lucide="${result.iconName}" class="w-16 h-16 ${result.iconColor}"></i>`;
+        lucide.createIcons();
+    }
+
+    function downloadCertificate() {
+        const btn = document.getElementById('btn-download');
+        btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Generazione...`;
+        lucide.createIcons();
+        
+        const element = document.getElementById('certificate-area');
+        
+        // Wait for UI
+        setTimeout(() => {
+            html2canvas(element, {
+                scale: 2,
+                backgroundColor: '#fdfbf7',
+                logging: false,
+                useCORS: true,
+                scrollX: 0,
+                scrollY: 0
+            }).then(canvas => {
+                const link = document.createElement('a');
+                const fileName = `Certificato_Etico_${userName.replace(/\s+/g, '_')}.png`;
+                link.download = fileName;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                // Reset button
+                btn.innerHTML = `<i data-lucide="download" class="w-5 h-5"></i> Scarica Immagine`;
+                lucide.createIcons();
+            }).catch(err => {
+                console.error(err);
+                alert("Errore download. Screenshotta manualmente.");
+                btn.innerHTML = `<i data-lucide="download" class="w-5 h-5"></i> Scarica Immagine`;
+                lucide.createIcons();
+            });
+        }, 100);
+    }
+
+    function resetApp() {
+        userName = '';
+        location.reload(); // Simplest reset for vanilla JS app
+    }
+  </script>
+</body>
+</html>
